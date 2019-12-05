@@ -1,0 +1,3 @@
+ margeGauche= 45; //La marge en pixels de la bordure gauche		
+ margHaut = 70;  //La marge en pixels entre le haut de la fenêtre et la grille
+ tailleCase = 72
