@@ -13,12 +13,17 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -188,9 +193,9 @@ public class Interface extends Application {
 			vBox2.getChildren().addAll(lblTemps, vBox3, lblRestart, lblQuitter);
 			gameRoot.setRight(vBox2);
 			gameRoot.setCenter(gameGrid);
-			Scene sceneG = new Scene(gameRoot,777,600);
+			Scene sceneG = new Scene(gameRoot,777,586);
 			gameStage.setScene(sceneG);
-//			gameStage.setResizable(false);
+			gameStage.setResizable(false);
 			gameStage.getIcons().add(new Image("icone.png"));
 //						
 //				PAGE DU JEU
@@ -202,57 +207,75 @@ public class Interface extends Application {
 	
 	
 	public class GestionClick implements EventHandler<MouseEvent>, Runnable {
-
+			
+		LectureDonnees lecD;
+		ArrayList<Vehicule> cars;
+		Vehicule car;
+		GestionDrag gd;
+		double X;
+		double Y;
+		
+		
 		public void handle(MouseEvent e) {
 			
-			LectureDonnees lecD;
-			ArrayList<Vehicule> cars;
-			Vehicule car;
-			
-			if (e.getSource()==lbl1) { 			// JEU FACILE
+			if (e.getSource()==lbl1) { 				// JEU FACILE
 				gameStage.setTitle("Jeu facile");
-				tempsDebut = LocalDateTime.now();
 				lecD = new LectureDonnees(1);
-				cars = lecD.getCars();
-				gameGrid.getChildren().clear();
-				for (Vehicule voiture : cars) {
-					voiture.setLayoutX(45 + voiture.getIntColonne()*72 );
-					voiture.setLayoutY(70 + voiture.getIntLigne()*72 );
-					gameGrid.getChildren().add(voiture);
-				}
-				new Thread(this).start();
-				gameStage.showAndWait();
+				
 			} else if (e.getSource()==lbl2) { 	// JEU MOYEN
 				gameStage.setTitle("Jeu moyen");
-				tempsDebut = LocalDateTime.now();
 				lecD = new LectureDonnees(2);
-				cars = lecD.getCars();
-				gameGrid.getChildren().clear();
-				for (Vehicule voiture : cars) {
-					voiture.setLayoutX(45 + voiture.getIntColonne()*72 );
-					voiture.setLayoutY(70 + voiture.getIntLigne()*72 );
-					gameGrid.getChildren().add(voiture);
-				}
-				new Thread(this).start();
-				gameStage.showAndWait();
+				
 			} else if (e.getSource()==lbl3 ) { 	// JEU DIFFICILE
 				gameStage.setTitle("Jeu difficile");
-				tempsDebut = LocalDateTime.now();
 				lecD = new LectureDonnees(3);
+			}
+			
+													// CONSTRUCTION DE TABLE DE JEU
+			if (e.getSource() == lbl1 || e.getSource()==lbl2 || e.getSource()==lbl3) {
+				Glow glow = new Glow();
+				glow.setLevel(0.5);
+
+				tempsDebut = LocalDateTime.now();
 				cars = lecD.getCars();
 				gameGrid.getChildren().clear();
+
 				for (Vehicule voiture : cars) {
 					voiture.setLayoutX(45 + voiture.getIntColonne()*72 );
 					voiture.setLayoutY(70 + voiture.getIntLigne()*72 );
+					voiture.setOnMouseEntered(enter -> {voiture.setEffect(glow);});
+					voiture.setOnMouseExited(exit -> {voiture.setEffect(null);});
+					
+					voiture.setOnDragDetected(dragDetected -> {
+						X = e.getX(); Y = e.getY();
+						voiture.setLayoutX(X);
+						voiture.setLayoutY(Y);
+					});
+					
+					
+					
 					gameGrid.getChildren().add(voiture);
 				}
+
 				new Thread(this).start();
 				gameStage.showAndWait();
 			}
 			
 			
-		}	// fin de methode handle
+			
+		}	// fin de methode handle mouse click
 
+		
+		public class GestionDrag implements EventHandler<DragEvent> {
+
+			public void handle(DragEvent d) {
+				
+				
+			}	// fin de methode handle drag
+			
+		}	// FIN DE LA MÉTHODE GESTION DRAG
+		
+		
 		@Override
 		public void run() {
 			try {
