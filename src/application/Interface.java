@@ -56,7 +56,7 @@ public class Interface extends Application {
 	Pane gameGrid;
 	Stage gameStage;
 	BorderPane gameRoot;
-	Label lbl1, lbl2, lbl3, lblTemps;
+	Label lbl1, lbl2, lbl3, lblTemps, lblMoves;
 	LocalDateTime tempsDebut;
 	
 	@Override
@@ -164,9 +164,8 @@ public class Interface extends Application {
 			
 			VBox vBox3 = new VBox();
 			vBox3.setSpacing(5);
-			Label lblMoves = new Label("0");
+			lblMoves = new Label("0");
 			lblMoves.setAlignment(Pos.CENTER);
-//			lblMoves.set
 			lblMoves.setFont(Font.font("Impact", FontWeight.BOLD, FontPosture.REGULAR, 50));
 			lblMoves.setBorder(bordure);
 			lblMoves.setPrefSize(150, 100);
@@ -213,8 +212,9 @@ public class Interface extends Application {
 		Vehicule car;
 		GestionDrag gd;
 		double X;
-		double Y;
-		
+		double  Y;
+		int moves = 0;
+		Boolean dragged = false;
 		
 		public void handle(MouseEvent e) {
 			
@@ -222,11 +222,11 @@ public class Interface extends Application {
 				gameStage.setTitle("Jeu facile");
 				lecD = new LectureDonnees(1);
 				
-			} else if (e.getSource()==lbl2) { 	// JEU MOYEN
+			} else if (e.getSource()==lbl2) { 		// JEU MOYEN
 				gameStage.setTitle("Jeu moyen");
 				lecD = new LectureDonnees(2);
 				
-			} else if (e.getSource()==lbl3 ) { 	// JEU DIFFICILE
+			} else if (e.getSource()==lbl3 ) { 		// JEU DIFFICILE
 				gameStage.setTitle("Jeu difficile");
 				lecD = new LectureDonnees(3);
 			}
@@ -239,22 +239,46 @@ public class Interface extends Application {
 				tempsDebut = LocalDateTime.now();
 				cars = lecD.getCars();
 				gameGrid.getChildren().clear();
-
+				lblMoves.setText("0");
+													// CONSTRUCTION DE LA VOITURE
 				for (Vehicule voiture : cars) {
 					voiture.setLayoutX(45 + voiture.getIntColonne()*72 );
 					voiture.setLayoutY(70 + voiture.getIntLigne()*72 );
 					voiture.setOnMouseEntered(enter -> {voiture.setEffect(glow);});
 					voiture.setOnMouseExited(exit -> {voiture.setEffect(null);});
-					
-					voiture.setOnDragDetected(dragDetected -> {
-						X = e.getX(); Y = e.getY();
-						voiture.setLayoutX(X);
-						voiture.setLayoutY(Y);
+										
+					voiture.setOnMousePressed(mousePressed -> {
+						dragged = false;
+						System.out.println("mousePressed");
+						X = mousePressed.getX();
+						Y = mousePressed.getY();
 					});
 					
-					
-					
+					voiture.setOnMouseDragged(mouseDragged -> {
+						dragged = true;
+						System.out.println("mouseDragged");
+						Vehicule car;
+						car = (Vehicule) mouseDragged.getSource();
+						
+						if (car.getChrDirection() == 'H')
+							car.setLayoutX(mouseDragged.getX() + car.getLayoutX() - X);
+						else
+							car.setLayoutY(mouseDragged.getY() + car.getLayoutY() - Y);
+						
+						
+					});
+						
+					voiture.setOnMouseReleased(mouseReleased -> {
+						if (dragged == true) {
+							System.out.println("mouseReleased");
+							moves++;
+							lblMoves.setText(Integer.toString(moves));
+						
+						}
+					});
+										
 					gameGrid.getChildren().add(voiture);
+					
 				}
 
 				new Thread(this).start();
