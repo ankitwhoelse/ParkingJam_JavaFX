@@ -43,7 +43,7 @@ public class LectureDonnees {
 						strLong = "camion";
 				String strFichier = strLong + "_" + direction + "_" + couleur + ".gif";
 								
-				car = new Vehicule(couleur, longeur, colonne, ligne, direction, strFichier);
+				car = new Vehicule(couleur, longeur, colonne, ligne, direction, strFichier, 0, 0);
 				
 				
 				cars.add(car);

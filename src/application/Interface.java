@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 
 import javafx.application.Application;
@@ -161,6 +162,7 @@ public class Interface extends Application {
 			lblTemps.setTextFill(Color.FIREBRICK);
 			lblTemps.setPrefSize(150, 100);
 			lblTemps.setBorder(bordure);
+										lblTemps.setOnMouseClicked(click -> {System.exit(1);});					// APP QUIT ON CLICK SUR TEMPS
 			
 			VBox vBox3 = new VBox();
 			vBox3.setSpacing(5);
@@ -192,7 +194,7 @@ public class Interface extends Application {
 			vBox2.getChildren().addAll(lblTemps, vBox3, lblRestart, lblQuitter);
 			gameRoot.setRight(vBox2);
 			gameRoot.setCenter(gameGrid);
-			Scene sceneG = new Scene(gameRoot,777,586);
+			Scene sceneG = new Scene(gameRoot,777,580);
 			gameStage.setScene(sceneG);
 			gameStage.setResizable(false);
 			gameStage.getIcons().add(new Image("icone.png"));
@@ -211,8 +213,7 @@ public class Interface extends Application {
 		ArrayList<Vehicule> cars;
 		Vehicule car;
 		GestionDrag gd;
-		double X;
-		double  Y;
+		double X;	double  Y;
 		int moves = 0;
 		Boolean dragged = false;
 		
@@ -235,18 +236,22 @@ public class Interface extends Application {
 			if (e.getSource() == lbl1 || e.getSource()==lbl2 || e.getSource()==lbl3) {
 				Glow glow = new Glow();
 				glow.setLevel(0.5);
-
+							
 				tempsDebut = LocalDateTime.now();
 				cars = lecD.getCars();
 				gameGrid.getChildren().clear();
 				lblMoves.setText("0");
 													// CONSTRUCTION DE LA VOITURE
 				for (Vehicule voiture : cars) {
-					voiture.setLayoutX(45 + voiture.getIntColonne()*72 );
-					voiture.setLayoutY(70 + voiture.getIntLigne()*72 );
+					voiture.setLayoutX(45 + voiture.getIntColonne()*72);
+					voiture.setLayoutY(70 + voiture.getIntLigne()*72);
+					
+					voiture.setDblX(voiture.getLayoutX());
+					voiture.setDblY(voiture.getLayoutY());
+					
 					voiture.setOnMouseEntered(enter -> {voiture.setEffect(glow);});
 					voiture.setOnMouseExited(exit -> {voiture.setEffect(null);});
-										
+					
 					voiture.setOnMousePressed(mousePressed -> {
 						dragged = false;
 						System.out.println("mousePressed");
@@ -256,14 +261,53 @@ public class Interface extends Application {
 					
 					voiture.setOnMouseDragged(mouseDragged -> {
 						dragged = true;
-						System.out.println("mouseDragged");
-						Vehicule car;
-						car = (Vehicule) mouseDragged.getSource();
 						
-						if (car.getChrDirection() == 'H')
-							car.setLayoutX(mouseDragged.getX() + car.getLayoutX() - X);
-						else
-							car.setLayoutY(mouseDragged.getY() + car.getLayoutY() - Y);
+						double posX = (mouseDragged.getX() - X + voiture.getLayoutX());
+						double posY = (mouseDragged.getY() - Y + voiture.getLayoutY());
+
+						for (Vehicule parked : cars) {
+							if (parked != voiture) { 
+								if (parked.getChrDirection() == 'H') {
+									if (  ( posX > parked.getLayoutX() && posX < (parked.getLayoutX()+parked.getIntLongeur()*72) ) && ( (posY > parked.getLayoutY()) && (posY < parked.getLayoutY()+72) )   ) {
+										System.out.println("crashed");
+									} else {
+										if (voiture.getChrDirection() == 'H' && (posX >= 45 && posX <= (45+6*72) - voiture.getIntLongeur()*72)) {
+											voiture.setLayoutX(posX);
+											voiture.setDblX(posX);
+										}
+										else if (voiture.getChrDirection() == 'V' && (posY >= 70 && posY <= (70+6*72) - voiture.getIntLongeur()*72)) {
+											voiture.setLayoutY(posY);
+											voiture.setDblY(posY);
+										}
+									}
+								} else if (parked.getChrDirection() == 'V') {
+									if (  ( posY > parked.getLayoutY() && posY < (parked.getLayoutY()+parked.getIntLongeur()*72) ) && ( (posX > parked.getLayoutX()) && (posX < parked.getLayoutX()+72) )   ) {
+										System.out.println("crashed");
+									} else {
+										if (voiture.getChrDirection() == 'H' && (posX >= 45 && posX <= (45+6*72) - voiture.getIntLongeur()*72)) {
+											voiture.setLayoutX(posX);
+											voiture.setDblX(posX);
+										}
+										else if (voiture.getChrDirection() == 'V' && (posY >= 70 && posY <= (70+6*72) - voiture.getIntLongeur()*72)) {
+											voiture.setLayoutY(posY);
+											voiture.setDblY(posY);
+										}
+									} 
+								}
+							}
+								
+							
+						}
+						
+						
+//						if (voiture.getChrDirection() == 'H' && (posX >= 45 && posX <= (45+6*72) - voiture.getIntLongeur()*72)) {
+//							voiture.setLayoutX(posX);
+//							voiture.setDblX(posX);
+//						}
+//						else if (voiture.getChrDirection() == 'V' && (posY >= 70 && posY <= (70+6*72) - voiture.getIntLongeur()*72)) {
+//							voiture.setLayoutY(posY);
+//							voiture.setDblY(posY);
+//						}
 						
 						
 					});
@@ -271,15 +315,36 @@ public class Interface extends Application {
 					voiture.setOnMouseReleased(mouseReleased -> {
 						if (dragged == true) {
 							System.out.println("mouseReleased");
+							
+							double[] Xpossible = new double[5];
+							double[] Ypossible = new double[5];
+							double minx = Double.MAX_VALUE;
+							double miny = Double.MAX_VALUE;
+							
+							for (int i = 0; i < Xpossible.length; i++) {
+								Xpossible[i] = voiture.getLayoutX() - i*72 + 45;
+								Ypossible[i] = voiture.getLayoutY() - i*72 + 45;
+							}
+							
+							for (int i = 0; i < 6; i++) {
+								if (Xpossible[i] < minx && Xpossible[i]>0)
+									minx = Xpossible[i];
+								if (Ypossible[i] < miny && Ypossible[i]>0)
+									miny = Ypossible[i];
+							}
+							
+							
+									
+							voiture.setLayoutX(minx);
+							voiture.setLayoutY(miny);
+							
 							moves++;
 							lblMoves.setText(Integer.toString(moves));
-						
 						}
 					});
 										
 					gameGrid.getChildren().add(voiture);
-					
-				}
+				}									// CONSTRUCTION DE LA VOITURE
 
 				new Thread(this).start();
 				gameStage.showAndWait();

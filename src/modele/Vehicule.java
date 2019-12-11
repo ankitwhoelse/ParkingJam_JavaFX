@@ -14,8 +14,10 @@ public class Vehicule extends ImageView{
 	int intLigne;
 	char chrDirection;
 	String strFichier;
+	double dblX;
+	double dblY;
 	
-	public Vehicule(String strCouleur, int intLongeur, int intColonne, int intLigne, char chrDirection, String strFichier) {
+	public Vehicule(String strCouleur, int intLongeur, int intColonne, int intLigne, char chrDirection, String strFichier, double dblX, double dblY) {
 		this.strCouleur = strCouleur;
 		this.intLongeur = intLongeur;
 		this.intColonne = intColonne;
@@ -23,6 +25,8 @@ public class Vehicule extends ImageView{
 		this.chrDirection = chrDirection;
 		this.strFichier = strFichier;
 		this.setImage(new Image(strFichier));
+		this.dblX = 0;
+		this.dblY = 0;
 	}
 
 	public String getStrCouleur() {
@@ -54,6 +58,22 @@ public class Vehicule extends ImageView{
 	public String toString() {
 		return "Vehicule [strCouleur=" + strCouleur + ", intLongeur=" + intLongeur + ", intColonne=" + intColonne
 				+ ", intLigne=" + intLigne + ", chrDirection=" + chrDirection + ", strFichier=" + strFichier + "]";
+	}
+
+	public double getDblX() {
+		return dblX;
+	}
+
+	public void setDblX(double dblX) {
+		this.dblX = dblX;
+	}
+
+	public double getDblY() {
+		return dblY;
+	}
+
+	public void setDblY(double dblY) {
+		this.dblY = dblY;
 	}
 	
 
