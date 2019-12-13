@@ -1,13 +1,10 @@
 package modele;
 
-import java.util.ArrayList;
-
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Vehicule extends ImageView{
 
-	ArrayList<Vehicule> cars;
 	String strCouleur;
 	int intLongeur;
 	int intColonne;
@@ -25,8 +22,8 @@ public class Vehicule extends ImageView{
 		this.chrDirection = chrDirection;
 		this.strFichier = strFichier;
 		this.setImage(new Image(strFichier));
-		this.dblX = 0;
-		this.dblY = 0;
+		this.dblX = dblX;
+		this.dblY = dblY;
 	}
 
 	public String getStrCouleur() {
