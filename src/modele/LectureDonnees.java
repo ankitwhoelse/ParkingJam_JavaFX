@@ -6,11 +6,19 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+/**
+* Effectue la lecture des données dans les fichiers de difficulté.
+*
+* @author Ankit Patel
+* @version 1.0 2019-12-15
+*/
 public class LectureDonnees {
-
-	int intDiff;
-	ArrayList<Vehicule> cars;
 	
+	private ArrayList<Vehicule> cars;
+	
+	/**
+	* Constructeur des données
+	*/
 	public LectureDonnees(int intDiff) {
 		
 		cars = new ArrayList<Vehicule>();
@@ -58,7 +66,12 @@ public class LectureDonnees {
 		}
 		
 	}
-
+	
+	/**
+	* Retourne cars
+	*	
+	* @return un arrayList de tous les véhicules sur la grille
+	*/
 	public ArrayList<Vehicule> getCars() {
 		return cars;
 	}

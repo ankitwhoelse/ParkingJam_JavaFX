@@ -17,7 +17,6 @@ import javafx.scene.control.Label;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.DragEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -45,15 +44,27 @@ import javafx.stage.Stage;
 import modele.LectureDonnees;
 import modele.Vehicule;
 
+/**
+* Construit l'interface graphique et donne toutes les propriétés aux éléments.
+*
+* @author Ankit Patel
+* @version 1.6.3 2019-12-15
+*/
 public class Interface extends Application {
 
-	Pane gameGrid;
-	Stage gameStage;
-	Scene sceneG;
-	BorderPane gameRoot;
-	Label lbl1, lbl2, lbl3, lblTemps, lblMoves, lblRestart;
-	LocalDateTime tempsDebut;
+	private Pane gameGrid;
+	private Stage gameStage, victoryStage;
+	private Scene scene, sceneG, sceneV;
+	private BorderPane gameRoot;
+	private Label lbl1, lbl2, lbl3, lblTemps, lblMoves, lblRestart;
+	private LocalDateTime tempsDebut;
 	
+	/**
+	* Construit et démarre l'application.
+	*
+	* Cette méthode contient tous les éléments qui constituent les
+	* différentes panes de l'application.
+	*/
 	@Override
 	public void start(Stage primaryStage) {
 		try {
@@ -120,7 +131,7 @@ public class Interface extends Application {
 			vBox1.getChildren().addAll(lbl0, hBox1);
 			vBox1.setAlignment(Pos.CENTER);
 			
-			Scene scene = new Scene(vBox1,600,400);
+			scene = new Scene(vBox1,600,400);
 			scene.setCursor(new ImageCursor(new Image("icone.png")));
 			primaryStage.getIcons().add(new Image("icone.png"));
 			primaryStage.setTitle("Rushhour par Ankit");
@@ -157,7 +168,7 @@ public class Interface extends Application {
 			lblTemps.setTextFill(Color.FIREBRICK);
 			lblTemps.setPrefSize(150, 100);
 			lblTemps.setBorder(bordure);
-										lblTemps.setOnMouseClicked(click -> {System.exit(1);});					// APP QUIT ON CLICK SUR TEMPS
+//				lblTemps.setOnMouseClicked(click -> {System.exit(1);});					// APP QUIT ON CLICK SUR TEMPS
 			
 			VBox vBox3 = new VBox();
 			vBox3.setSpacing(5);
@@ -170,7 +181,7 @@ public class Interface extends Application {
 			txtMoves.setFont(Font.font("Impact", FontWeight.BOLD, FontPosture.REGULAR, 14));
 			vBox3.getChildren().addAll(lblMoves, txtMoves);
 			
-			lblRestart = new Label("grille[][]");
+			lblRestart = new Label("Réinitialiser");
 			lblRestart.setAlignment(Pos.CENTER);
 			lblRestart.setFont(Font.font("Impact", FontWeight.BOLD, FontPosture.REGULAR, 20));
 			lblRestart.setPrefSize(150, 75);
@@ -182,7 +193,7 @@ public class Interface extends Application {
 			lblQuitter.setFont(Font.font("Impact", FontWeight.BOLD, FontPosture.REGULAR, 20));
 			lblQuitter.setPrefSize(150, 75);
 			lblQuitter.setBorder(bordure);
-			lblQuitter.setOnMouseClicked(e -> {gameStage.close();});
+			lblQuitter.setOnMouseClicked(e -> {gameStage.close(); primaryStage.show();});
 			
 			vBox2.getChildren().addAll(lblTemps, vBox3, lblRestart, lblQuitter);
 			gameRoot.setRight(vBox2);
@@ -199,17 +210,15 @@ public class Interface extends Application {
 		
 	} 	// FIN DE METHODE START
 	
-	
-	public class GestionClick implements EventHandler<MouseEvent>, Runnable {
+
+	private class GestionClick implements EventHandler<MouseEvent>, Runnable {
 			
-		LectureDonnees lecD;
-		ArrayList<Vehicule> cars;
-		Vehicule car;
-		GestionDrag gd;
-		double X;	double  Y;
-		int moves = 0;
-		Boolean dragged = false;
-		double[][] grille = new double[6][6];
+		private LectureDonnees lecD;
+		private ArrayList<Vehicule> cars;
+		private double X;	double  Y;
+		private int moves = 0;
+		private Boolean dragged = false;
+		private double[][] grille = new double[6][6];
 		
 		public void handle(MouseEvent e) {
 					
@@ -234,6 +243,7 @@ public class Interface extends Application {
 				tempsDebut = LocalDateTime.now();
 				cars = lecD.getCars();
 				gameGrid.getChildren().clear();
+				moves = 0;
 				lblMoves.setText("0");
 													// CONSTRUCTION DE LA VOITURE
 				for (Vehicule voiture : cars) {
@@ -263,7 +273,6 @@ public class Interface extends Application {
 					
 					voiture.setOnMousePressed(mousePressed -> {
 						dragged = false;
-						System.out.println("mousePressed");
 						X = mousePressed.getX();
 						Y = mousePressed.getY();
 					});
@@ -271,18 +280,19 @@ public class Interface extends Application {
 					voiture.setOnMouseDragged(mouseDragged -> {
 						dragged = true;
 						
+							// POSITION DE VOITURE AVEC MOUVEMENT DE LA SOURIS
 						double posX = (mouseDragged.getX() - X + voiture.getLayoutX());
 						double posY = (mouseDragged.getY() - Y + voiture.getLayoutY());		
 						
+							//	BLOCKAGE AUX MARGES VERTICALES
 						if (voiture.getChrDirection() == 'H' && (posX >= 45 && posX <= (45+6*72) - voiture.getIntLongeur()*72)) {
 							voiture.setLayoutX(posX);
-							voiture.setDblX(posX);
-						}
+						}	//	BLOCKAGE AUX MARGES HORIZONTALES
 						else if (voiture.getChrDirection() == 'V' && (posY >= 70 && posY <= (70+6*72) - voiture.getIntLongeur()*72)) {
 							voiture.setLayoutY(posY);
-							voiture.setDblY(posY);
 						}
 
+						
 						int newCaseX = (int) (posX - 45)/72;
 						int newCaseY = (int) (posY - 45)/72;
 						if (newCaseX < 0) newCaseX = 0;		if (newCaseX > 5) newCaseX = 5;
@@ -305,28 +315,50 @@ public class Interface extends Application {
 								new2CaseY++;
 						}
 						
-						for (int i = 0; i < voiture.getIntLongeur(); i++) {
-							
-						}
+//						for (int i = 0; i < voiture.getIntLongeur(); i++) 	// COLLISION
+//							//voiture horizontale
+//							if (voiture.getChrDirection()=='H')
+//								//auto
+//								if (voiture.getIntLongeur()==2)
+//									if (newCaseX+2 <=5 && grille[newCaseX+2][newCaseY] == 1 ) 
+//										System.out.println("crash a droite - A");
+//									else if (newCaseX-1 >= 0 && grille[newCaseX-1][newCaseY] == 1) 
+//										System.out.println("crash a gauche - A");
+//								//camion
+//								else
+//									if (newCaseX+3 <= 5 && grille[newCaseX+3][newCaseY] == 1) 
+//										System.out.println("crash a droite - C");
+//									else if (newCaseX-1 >=0 && grille[newCaseY-1][newCaseY] == 1) 
+//										System.out.println("crash a gauche - C");
+//							//voiture verticale
+//							else 
+//								//auto
+//								if (voiture.getIntLongeur()==2)
+//									if (newCaseY+2 <= 5 && grille[newCaseX][newCaseY+2] == 1 )
+//										System.out.println("crash en bas - A");
+//									else if (newCaseY-1 >= 0 && grille[newCaseX][newCaseY-1] == 1)
+//										System.out.println("crash en haut - A");
+//								//camion
+//								else 
+//									if (newCaseY+3 <= 5 && grille[newCaseX][newCaseY+3] == 1 )
+//										System.out.println("crash en bas - C");
+//									else if (newCaseY-1 >= 0 && grille[newCaseX][newCaseY-1] == 1)
+//										System.out.println("crash en haut - C");
 
-						
-						
+					
 					});
 						
 					voiture.setOnMouseReleased(mouseReleased -> {
 						if (dragged == true) {
-							System.out.println("mouseReleased");
-							
 							double posX = (mouseReleased.getX() - X + voiture.getLayoutX());
 							double posY = (mouseReleased.getY() - Y + voiture.getLayoutY());
-//							System.out.println(posX + ":" + posY);
-//							System.out.println(( (posX-45)/72) %10 + ":" + ( (posY-70)/72) % 10);	
-							
+
 							int newCaseX = (int) (posX - 45)/72;
 							int newCaseY = (int) (posY - 45)/72;
-							
-							if ( ( (posX-45)/72) % 10 > 0.5 ) newCaseX++; else newCaseX--;
-							if ( ( (posY-70)/72) % 10 > 0.5 ) newCaseY++; else newCaseY--;
+														
+							if ( ( ((posX-45)/72) % 10) > 0.5 ) newCaseX++; 
+								
+							if ( ( ((posY-70)/72) % 10) > 0.5 ) newCaseY++;
 						
 							if (newCaseX < 0) newCaseX = 0;		if (newCaseX > 5) newCaseX = 5;
 							if (newCaseY < 0) newCaseY = 0;		if (newCaseY > 5) newCaseY = 5;
@@ -335,12 +367,63 @@ public class Interface extends Application {
 							if (voiture.getChrDirection()=='H' && voiture.getIntLongeur()==2 && newCaseX > 4) newCaseX=4;
 							if (voiture.getChrDirection()=='V' && voiture.getIntLongeur()==3 && newCaseY > 3) newCaseY=3;
 							if (voiture.getChrDirection()=='V' && voiture.getIntLongeur()==2 && newCaseY > 4) newCaseY=4;
-							
+						
 							if (voiture.getChrDirection()=='H')
 								voiture.setLayoutX(45 + newCaseX*72);
 							else
 								voiture.setLayoutY(70 + newCaseY*72);
 
+//							System.out.println(newCaseX + ":" + newCaseY);
+
+							if (newCaseX==4 && newCaseY==3 && voiture.getChrDirection()=='H') {
+//								----------------
+//								PAGE DU VICTOIRE
+//								
+								gameStage.close();
+								BorderPane root3 = new BorderPane();
+								VBox vBox3 = new VBox();
+								
+								Text txtVic = new Text("\n\nVICTOIRE");
+								txtVic.setFont(Font.font("Impact",40));
+								txtVic.setFill(Color.YELLOW);
+								
+								Label txtVic2 = new Label("Vous avez réussi en\n" + "   	 " +lblTemps.getText() 
+								+ " avec " + lblMoves.getText() + "\n    déplacements.");
+								txtVic2.setFont(Font.font("Impact",30));
+								txtVic2.setTextFill(Color.YELLOW);
+								Image imgVic = new Image("award.gif");
+								txtVic2.setGraphic(new ImageView(imgVic));
+								txtVic2.setContentDisplay(ContentDisplay.BOTTOM);
+								txtVic2.setAlignment(Pos.CENTER);
+								txtVic2.setOnMouseEntered(mE -> {txtVic2.setEffect(glow);
+								sceneV.setCursor(new ImageCursor(imgVic));});
+								txtVic2.setOnMouseExited(mE -> {txtVic2.setEffect(null);
+								sceneV.setCursor(Cursor.DEFAULT);});
+								txtVic2.setOnMouseClicked(mC -> {victoryStage.close();});
+								
+								vBox3.setAlignment(Pos.CENTER);
+								vBox3.setSpacing(10);
+								vBox3.getChildren().addAll(txtVic, txtVic2);
+								root3.setCenter(vBox3);
+								
+								Image fondVic = new Image("victoire.jpg");
+								BackgroundSize fondTail = new BackgroundSize(100,100,true,true,false,true); 
+								BackgroundImage fondImg = new BackgroundImage(fondVic, BackgroundRepeat.SPACE,BackgroundRepeat.SPACE,BackgroundPosition.DEFAULT,fondTail);
+								Background fondVict = new Background(fondImg);
+								root3.setBackground(fondVict);
+								
+								sceneV = new Scene(root3,800,600);
+								victoryStage = new Stage();
+								victoryStage.getIcons().add(imgVic);
+								victoryStage.setTitle("Victoire");
+								victoryStage.setScene(sceneV);
+								victoryStage.show();
+//						
+//								PAGE DU VICTOIRE
+//								----------------
+							}
+							
+							
 							for (int i = 0; i < grille.length; i++) 
 								for (int k = 0; k < grille.length; k++) 
 									grille[i][k] = 0;
@@ -374,34 +457,41 @@ public class Interface extends Application {
 										
 					gameGrid.getChildren().add(voiture);
 				}									// CONSTRUCTION DE LA VOITURE
-				
 
 				new Thread(this).start();
 				gameStage.showAndWait();
 			}
 			
 			if (e.getSource() == lblRestart) {
-				//				VISUEL DE GRILLE	
-				for (int i = 0; i < grille.length; i++) {
-					for (int k = 0; k < grille.length; k++)
-						System.out.print("["+grille[i][k]+"]");
-					System.out.println();
+				tempsDebut = LocalDateTime.now();
+				cars = lecD.getCars();
+				moves = 0;
+				lblMoves.setText("0");
+				
+				for (Vehicule voiture : cars) {
+					voiture.setLayoutX(45 + voiture.getIntColonne()*72);
+					voiture.setLayoutY(70 + voiture.getIntLigne()*72);
 				}
+				
+//				//				VISUEL DE GRILLE	
+//				for (int i = 0; i < grille.length; i++) {
+//					for (int k = 0; k < grille.length; k++)
+//						System.out.print("["+grille[i][k]+"]");
+//					System.out.println();
+//				}
+				
 			}
 			
 		}	// fin de methode handle mouse click
 
-		
-		public class GestionDrag implements EventHandler<DragEvent> {
 
-			public void handle(DragEvent d) {
-				
-				
-			}	// fin de methode handle drag
-			
-		}	// FIN DE LA MÉTHODE GESTION DRAG
 		
-		
+		/**
+		* Mise en marche du chronomètre.
+		*
+		* La méthode débute le chronomètre quand le jeu commence. 
+		* Le temps est affiché sur la pane du jeu puis est affiché à la victoire.
+		*/
 		@Override
 		public void run() {
 			try {
@@ -409,7 +499,7 @@ public class Interface extends Application {
 					LocalDateTime tempsActuel = LocalDateTime.now();
 					long diffSec = Duration.between(tempsDebut, tempsActuel).getSeconds();
 					long diffMin = Duration.between(tempsDebut, tempsActuel).toMinutes();
-					System.out.println(diffMin + ":" + (diffSec-(diffMin*60)));
+//					System.out.println(diffMin + ":" + (diffSec-(diffMin*60)));
 					Platform.runLater(() -> lblTemps.setText(" " + diffMin + ":" + (diffSec-(diffMin*60))));
 					Thread.sleep(1000);
 				}
